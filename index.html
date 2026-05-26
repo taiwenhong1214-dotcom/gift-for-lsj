@@ -294,6 +294,7 @@ section.active-page { opacity: 1; pointer-events: all; z-index: 10; }
 <audio id="bgm" src="bgm.mp3" loop preload="auto"></audio>
 <audio id="sound-correct" src="correct.mp3" preload="auto"></audio>
 <audio id="sound-wrong" src="wrong.mp3" preload="auto"></audio>
+<audio id="game-bgm" src="game-bgm.mp3" loop preload="auto"></audio>
 
 <div id="music-btn" class="music-btn" onclick="toggleMusic()">🎵</div>
 <div id="stars"></div>
@@ -520,10 +521,21 @@ function enterSite() {
 }
 
 function toggleMusic() {
-    const bgm = document.getElementById('bgm');
+    const mainBgm = document.getElementById('bgm');
+    const gameBgm = document.getElementById('game-bgm');
     const btn = document.getElementById('music-btn');
-    if (bgm.paused) { bgm.play(); btn.classList.remove('paused'); } 
-    else { bgm.pause(); btn.classList.add('paused'); }
+    
+    // 智能判断：如果在游戏里，就控制游戏BGM；否则控制主BGM
+    // (注意：gameActive 这个变量在游戏代码里定义了，所以这里能直接用)
+    let currentAudio = (typeof gameActive !== 'undefined' && gameActive) ? gameBgm : mainBgm;
+    
+    if (currentAudio.paused) { 
+        currentAudio.play(); 
+        btn.classList.remove('paused'); 
+    } else { 
+        currentAudio.pause(); 
+        btn.classList.add('paused'); 
+    }
 }
 
 function parseWeather(code) {
@@ -933,6 +945,21 @@ function openGame() {
     document.getElementById('game-confession').style.pointerEvents = 'none';
     
     gameActive = true;
+    
+    // --- ↓↓↓ 音乐切换逻辑：停掉主音乐，播放游戏音乐 ↓↓↓ ---
+    const mainBgm = document.getElementById('bgm');
+    const gameBgm = document.getElementById('game-bgm');
+    const btn = document.getElementById('music-btn');
+    
+    mainBgm.pause(); // 暂停主音乐
+    
+    // 如果右上角的音乐按钮没有被关闭，就播放游戏专属音乐
+    if (!btn.classList.contains('paused')) {
+        gameBgm.currentTime = 0; // 从头开始放
+        gameBgm.play().catch(e => console.log(e));
+    }
+    // --- ↑↑↑ 音乐切换逻辑结束 ↑↑↑ ---
+    
     gameLoop();
 }
 
@@ -941,6 +968,19 @@ function closeGame() {
     cancelAnimationFrame(animationId);
     document.querySelectorAll('section').forEach(s => s.classList.remove('active-page'));
     document.getElementById('page-0').classList.add('active-page');
+    
+    // --- ↓↓↓ 音乐切换逻辑：停掉游戏音乐，恢复主音乐 ↓↓↓ ---
+    const mainBgm = document.getElementById('bgm');
+    const gameBgm = document.getElementById('game-bgm');
+    const btn = document.getElementById('music-btn');
+    
+    gameBgm.pause(); // 暂停游戏音乐
+    
+    // 如果右上角没被静音，就恢复主BGM
+    if (!btn.classList.contains('paused')) {
+        mainBgm.play().catch(e => console.log(e));
+    }
+    // --- ↑↑↑ 音乐切换逻辑结束 ↑↑↑ ---
 }
 
 function gameLoop() {
