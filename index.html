@@ -167,7 +167,7 @@ section.active-page { opacity: 1; pointer-events: all; z-index: 10; }
 .letter-wrap { max-width: 600px; width: 100%; background: var(--surface); padding: 3rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
 .letter-body { font-family: var(--serif); font-size: 1.1rem; line-height: 2.2; color: #e2e8f0; }
 
-/* 互动：告白信逐句渐显动画（仅当页面激活时触发） */
+/* 互动：告白信逐句渐显动画 */
 .letter-body p { margin-bottom: 1.5rem; opacity: 0; transform: translateY(20px); }
 .active-page .letter-body p { animation: fadeInUp 1s forwards; }
 .active-page .letter-body p:nth-child(1) { animation-delay: 0.5s; }
@@ -322,6 +322,7 @@ section.active-page { opacity: 1; pointer-events: all; z-index: 10; }
 <!-- PAGE 0: 地图 -->
 <section id="page-0">
   <div class="ip-greeting" id="ip-greeting">✨ 正在连接专属星际航线...</div>
+  
   <div id="map-visualizer">
     <svg id="map-svg" viewBox="0 0 680 560" xmlns="http://www.w3.org/2000/svg">
       <defs><clipPath id="mc"><rect width="680" height="560"/></clipPath></defs>
@@ -367,6 +368,37 @@ section.active-page { opacity: 1; pointer-events: all; z-index: 10; }
   </div>
 
   <button class="btn" onclick="startTransition(1, '正在建立神经连线...')">继续流转</button>
+  <button class="btn-gray" style="margin-top: 1.5rem; border: 1px dashed var(--pink);" onclick="openGame()">🎮 玩个小游戏：接住我的爱</button>
+</section>
+
+<!-- 新增：小游戏专属页面 -->
+<section id="page-game" style="padding: 0; overflow: hidden; background: transparent;">
+  <!-- 游戏顶部进度条 -->
+  <div style="position: absolute; top: 12%; width: 80%; max-width: 400px; text-align: center; z-index: 10; pointer-events: none;">
+    <h3 style="color: var(--pink); font-family: var(--serif); margin-bottom: 15px; letter-spacing: 2px;">接住我的爱 💖</h3>
+    <div class="prog-container" style="height: 12px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-bottom: 0;">
+      <div id="game-progress" class="prog-fill" style="border-radius: 10px; transition: width 0.3s; width: 0%;"></div>
+    </div>
+  </div>
+  
+  <!-- 返回首页按钮 -->
+  <button class="btn-gray" style="position: absolute; top: 20px; left: 20px; z-index: 10; padding: 5px 15px;" onclick="closeGame()">← 返回</button>
+  
+  <!-- 游戏画布 -->
+  <canvas id="game-canvas"></canvas>
+  
+  <!-- 通关告白悬浮层 -->
+  <div id="game-confession" style="position: absolute; inset: 0; background: rgba(9,14,23,0.95); z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 1s;">
+    <h2 style="color: var(--pink); font-family: var(--serif); font-size: 2rem; margin-bottom: 1.5rem;">100% 的爱意已查收！</h2>
+    <p style="color: var(--text); line-height: 2.2; text-align: center; font-size: 1.1rem; max-width: 85%; margin-bottom: 3rem;">
+      其实，比起在屏幕里接住这些虚拟的爱心<br>
+      我更期待在现实里，<br>
+      <span style="color: var(--gold); font-weight: 500;">接住你所有的开心、小脾气和疲惫。</span><br><br>
+      接下来的日子，<br>
+      请继续在我怀里安心降落吧。
+    </p>
+    <button class="btn" style="margin-top: 0;" onclick="closeGame()">回到现实</button>
+  </div>
 </section>
 
 <!-- PAGE 1: 逃跑按钮游戏页 -->
@@ -447,7 +479,7 @@ section.active-page { opacity: 1; pointer-events: all; z-index: 10; }
 </section>
 
 <script>
-// --- 互动：全局点击飘落爱心特效 ---
+// 全局点击飘落爱心特效
 document.addEventListener('click', function(e) {
     const heart = document.createElement('div');
     heart.className = 'click-heart';
@@ -760,12 +792,10 @@ function submitQuiz() {
     const soundCorrect = document.getElementById('sound-correct');
     const soundWrong = document.getElementById('sound-wrong');
 
-    // 互动：宽容的输入验证逻辑
     if(q.isInput) {
         const val = document.getElementById('q-input').value.trim();
         if(!val) { showPopup('⚠️', '警告', '输入框不能为空哦'); return; }
         
-        // 只要包含 0、零、没、心 等字眼都算答对，增强女孩们的体验
         if(val.includes('0') || val.includes('零') || val.includes('没') || val.includes('心')) {
             isCorrect = true;
         } else {
@@ -844,7 +874,7 @@ const photoGrid = document.getElementById('photo-grid');
 photoData.forEach(p => {
     let card = document.createElement('div');
     card.className = 'photo-card';
-    card.style.cursor = 'pointer'; // 互动：增加点击手势
+    card.style.cursor = 'pointer'; 
     
     card.innerHTML = `
         <div class="photo-ph">
@@ -853,7 +883,6 @@ photoData.forEach(p => {
         <div class="photo-txt">${p.txt}</div>
     `;
     
-    // 互动：点击呼出全屏预览
     card.onclick = () => {
         document.getElementById('viewer-img').src = p.img;
         document.getElementById('viewer-txt').innerText = p.txt;
@@ -864,10 +893,136 @@ photoData.forEach(p => {
     photoGrid.appendChild(card);
 });
 
-// 关闭相册大图
 function closeViewer() {
     document.getElementById('photo-viewer').style.opacity = '0';
     document.getElementById('photo-viewer').style.pointerEvents = 'none';
+}
+
+// --- 小游戏核心逻辑 ---
+let gameActive = false;
+let gameScore = 0;
+let animationId;
+let playerX = window.innerWidth / 2;
+let items = [];
+let particles = [];
+
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas ? canvas.getContext('2d') : null;
+
+if(canvas) {
+    canvas.addEventListener('mousemove', (e) => { if(gameActive) playerX = e.clientX; });
+    canvas.addEventListener('touchmove', (e) => { 
+        e.preventDefault(); 
+        if(gameActive) playerX = e.touches[0].clientX; 
+    }, {passive: false});
+}
+
+function openGame() {
+    document.querySelectorAll('section').forEach(s => s.classList.remove('active-page'));
+    document.getElementById('page-game').classList.add('active-page');
+    
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    playerX = canvas.width / 2;
+    gameScore = 0;
+    items = [];
+    particles = [];
+    
+    document.getElementById('game-progress').style.width = '0%';
+    document.getElementById('game-confession').style.opacity = '0';
+    document.getElementById('game-confession').style.pointerEvents = 'none';
+    
+    gameActive = true;
+    gameLoop();
+}
+
+function closeGame() {
+    gameActive = false;
+    cancelAnimationFrame(animationId);
+    document.querySelectorAll('section').forEach(s => s.classList.remove('active-page'));
+    document.getElementById('page-0').classList.add('active-page');
+}
+
+function gameLoop() {
+    if(!gameActive) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    if(gameScore < 100) {
+        if(Math.random() < 0.04) {
+            items.push({
+                x: Math.random() * (canvas.width - 60) + 30,
+                y: -30,
+                speed: Math.random() * 3 + 3,
+                emoji: ['❤️','💖','🥰','💌','🌸'][Math.floor(Math.random()*5)]
+            });
+        }
+        
+        ctx.font = "35px Arial";
+        ctx.textAlign = "center";
+        for(let i = items.length - 1; i >= 0; i--) {
+            let item = items[i];
+            item.y += item.speed;
+            ctx.fillText(item.emoji, item.x, item.y);
+            
+            let py = canvas.height - 100; 
+            if(item.y > py - 20 && item.y < py + 40 && Math.abs(item.x - playerX) < 50) {
+                items.splice(i, 1);
+                gameScore += 5; 
+                document.getElementById('game-progress').style.width = gameScore + '%';
+                
+                if(gameScore >= 100) triggerWin();
+                continue;
+            }
+            if(item.y > canvas.height + 50) items.splice(i, 1);
+        }
+        
+        ctx.font = "55px Arial";
+        ctx.fillText("🧺", playerX, canvas.height - 70);
+        
+    } else {
+        for(let i = particles.length - 1; i >= 0; i--) {
+            let p = particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.05; 
+            p.life -= 0.015;
+            ctx.globalAlpha = Math.max(0, p.life);
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+            ctx.fill();
+            if(p.life <= 0) particles.splice(i, 1);
+        }
+        ctx.globalAlpha = 1;
+        if(particles.length < 150 && Math.random() < 0.1) createFirework();
+    }
+    
+    animationId = requestAnimationFrame(gameLoop);
+}
+
+function triggerWin() {
+    createFirework();
+    setTimeout(() => {
+        document.getElementById('game-confession').style.opacity = '1';
+        document.getElementById('game-confession').style.pointerEvents = 'all';
+    }, 1500);
+}
+
+function createFirework() {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height * 0.6; 
+    const colors = ['#ec4899', '#3b82f6', '#f59e0b', '#ffffff', '#be185d'];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    for(let i=0; i<60; i++) {
+        particles.push({
+            x: x, y: y,
+            vx: (Math.random() - 0.5) * 12,
+            vy: (Math.random() - 0.5) * 12,
+            size: Math.random() * 3 + 1.5,
+            color: color,
+            life: 1
+        });
+    }
 }
 </script>
 </body>
