@@ -1020,8 +1020,11 @@
             }
 
             .home-actions {
-                gap: 6px;
-                flex-wrap: nowrap;
+                display: flex;
+                gap: 12px;
+                justify-content: center;
+                margin-top: 2.5rem;   /* 原来是 1.5rem，改大一点 */
+                flex-wrap: wrap;
             }
             .home-actions .btn,
             .home-actions .btn-gray {
