@@ -106,7 +106,7 @@ export default async function handler(req, res) {
             },
             body: JSON.stringify({
                 models: [
-                    "deepseek/deepseek-v4-flash",
+                    "openai/gpt-oss-120b:free",
                     "z-ai/glm-4.5-air:free",  
                     "openai/gpt-5.4-nano"   // 免费备选
                 ],
