@@ -92,7 +92,7 @@ export default async function handler(req, res) {
     try {
         console.log('🌐 [DEBUG] Sending request to OpenRouter...');
         console.log('🔄 [DEBUG] Models to try:', [
-            "deepseek/deepseek-chat",
+            "openai/gpt-oss-120b:free",
             "qwen/qwen-3-8b:free",
             "google/gemini-2.5-flash-lite:free"
         ]);
