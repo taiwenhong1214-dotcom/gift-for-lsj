@@ -8,19 +8,15 @@ export default async function handler(req, res) {
     }
 
     // 🔑 关键：打印所有环境变量名（只打名字，不打值）
-    console.log('📋 [DEBUG] Available env keys:', Object.keys(process.env).filter(k => k.includes('OPENROUTER') || k.includes('API')));
+    console.log('📋 [DEBUG] Available env keys:', Object.keys(process.env).filter(k => k.includes('GEMINI') || k.includes('API')));
     
-    // 尝试多个可能的变量名
-    const apiKey = process.env.OPENROUTER_API_KEY 
-        || process.env.OPENROUTER_API_KEY3 
-        || process.env.OPENROUTER_API_KEY2;
+    const apiKey = process.env.GEMINI_API_KEY;
     
     if (!apiKey) {
-        console.error('🔥 [DEBUG] No OpenRouter API Key found in env vars!');
-        console.error('   Checked: OPENROUTER_API_KEY, OPENROUTER_API_KEY3, OPENROUTER_API_KEY2');
+        console.error('🔥 [DEBUG] No Gemini API Key found in env vars!');
         return res.status(500).json({ 
             error: 'API key not configured. Check Vercel environment variables.',
-            debug: 'Missing OPENROUTER_API_KEY'
+            debug: 'Missing GEMINI_API_KEY'
         });
     }
     
@@ -90,36 +86,26 @@ export default async function handler(req, res) {
     }
 
     try {
-        console.log('🌐 [DEBUG] Sending request to OpenRouter...');
-        console.log('🔄 [DEBUG] Models to try:', [
-            "openai/gpt-oss-120b:free",
-            "qwen/qwen-3-8b:free",
-            "google/gemini-2.5-flash-lite:free"
-        ]);
+        console.log('🌐 [DEBUG] Sending request to Google AI Studio...');
         
-        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`,
-                "HTTP-Referer": "https://gift-for-leesj.vercel.app"
+                'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                models: [
-                    "openai/gpt-oss-120b:free",
-                    "z-ai/glm-4.5-air:free",  
-                    "openai/gpt-5.4-nano"   // 免费备选
-                ],
+                model: "gemini-3.5-flash",
                 messages: messages,
                 temperature: 0.8,
             })
         });
 
-        console.log('📡 [DEBUG] OpenRouter response status:', response.status);
+        console.log('📡 [DEBUG] API response status:', response.status);
         
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('❌ [DEBUG] OpenRouter error body:', errorText);
+            console.error('❌ [DEBUG] API error body:', errorText);
             return res.status(500).json({ 
                 error: 'AI 服务暂时不可用',
                 debug: `Status ${response.status}: ${errorText.substring(0, 200)}`
@@ -127,7 +113,7 @@ export default async function handler(req, res) {
         }
 
         const data = await response.json();
-        console.log('✅ [DEBUG] Got valid response from OpenRouter');
+        console.log('✅ [DEBUG] Got valid response from Google AI Studio');
         
         if (!data.choices || data.choices.length === 0) {
             console.error('❌ [DEBUG] No choices in response:', JSON.stringify(data).substring(0, 500));
