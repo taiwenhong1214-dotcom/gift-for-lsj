@@ -1810,13 +1810,15 @@
             window.scrollTo(0, 0);
         }
 
+        let msgCounter = 0;
         function appendMessage(role, text) {
             const history = document.getElementById('chat-history');
             if (!history) return null;
             const div = document.createElement('div');
             div.className = `msg ${role}`;
             div.innerHTML = text;
-            const id = 'msg-' + Date.now();
+            msgCounter++;
+            const id = 'msg-' + Date.now() + '-' + msgCounter;
             div.id = id;
             history.appendChild(div);
             history.scrollTop = history.scrollHeight;
