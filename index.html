@@ -1842,13 +1842,40 @@
                     headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify({ action: 'chat', history: chatContext, hour }) 
                 });
-                const data = await res.json();
+                
                 const thinkingEl = document.getElementById(thinkingId);
-                if (thinkingEl) thinkingEl.remove();
-                if (data.message) {
-                    const botReply = data.message.replace(/\n/g, '<br>');
-                    appendMessage('bot', botReply);
-                    chatContext.push({ role: 'assistant', content: data.message });
+                if (thinkingEl) thinkingEl.innerHTML = ''; // 清空等待状态
+                
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let botMessage = '';
+                let buffer = '';
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop(); // 保留不完整的行
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                if (data.choices && data.choices[0].delta && data.choices[0].delta.content) {
+                                    botMessage += data.choices[0].delta.content;
+                                    if (thinkingEl) thinkingEl.innerHTML = botMessage.replace(/\n/g, '<br>');
+                                    const history = document.getElementById('chat-history');
+                                    if (history) history.scrollTop = history.scrollHeight;
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                }
+                
+                if (botMessage) {
+                    chatContext.push({ role: 'assistant', content: botMessage });
                 } else {
                     throw new Error('No response');
                 }

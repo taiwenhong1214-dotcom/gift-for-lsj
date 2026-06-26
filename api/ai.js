@@ -98,6 +98,7 @@ export default async function handler(req, res) {
                 model: "gemini-3.5-flash",
                 messages: messages,
                 temperature: 0.8,
+                stream: action === 'chat'
             })
         });
 
@@ -110,6 +111,23 @@ export default async function handler(req, res) {
                 error: 'AI 服务暂时不可用',
                 debug: `Status ${response.status}: ${errorText.substring(0, 200)}`
             });
+        }
+
+        if (action === 'chat') {
+            res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+            res.setHeader('Cache-Control', 'no-cache, no-transform');
+            res.setHeader('Connection', 'keep-alive');
+            
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+            
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                res.write(decoder.decode(value, { stream: true }));
+            }
+            res.end();
+            return;
         }
 
         const data = await response.json();
