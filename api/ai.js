@@ -107,8 +107,7 @@ export default async function handler(req, res) {
             body: JSON.stringify({
                 models: [
                     "openai/gpt-oss-120b:free",
-                    "z-ai/glm-4.5-air:free",  
-                    "openai/gpt-5.4-nano"
+                    "z-ai/glm-4.5-air:free",          
                 ],
                 messages: messages,
                 temperature: 0.8,
